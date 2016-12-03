@@ -8,6 +8,6 @@ then
     mv ${FILE_NAME} spark
 fi
 
-sbt package
+sbt assembly
 
 ./run.sh
