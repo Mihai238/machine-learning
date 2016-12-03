@@ -7,7 +7,7 @@ import org.apache.spark.ml.linalg.{Vector, Vectors}
 object App {
 
   def main(args: Array[String]): Unit = {
-    val filePath = "/home/mihai/Desktop/communities.data"
+    val filePath = "/home/mihai/Development/machine-learning/src/main/resources/communities.data"
 
     val conf = new SparkConf().setAppName("Simple Application")
     val sc = new SparkContext(conf)
