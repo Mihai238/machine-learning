@@ -1,8 +1,7 @@
-import org.apache.spark.ml.regression.LinearRegression
-import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.mllib.regression.{LabeledPoint, LinearRegressionWithSGD}
-import org.apache.spark.sql.SparkSession
 import org.apache.spark.ml.linalg.{Vector, Vectors}
+import org.apache.spark.ml.regression.LinearRegression
+import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.{SparkConf, SparkContext}
 
 object App {
 
@@ -17,29 +16,20 @@ object App {
       .appName("Spark SQL basic example")
       .getOrCreate()
 
-    val training = spark
+    val originalDataFrame = spark
       .read
       .format("csv")
       .load(filePath)
 
-    val x = training
-      .collect()
-      .drop(1)
-      .map(line => {
-        val map = line.toSeq.drop(5).dropRight(1).map(_.toString).map(toDouble).toArray
-        val label = line.toSeq.last
-        (label.toString.toDouble, Vectors.dense(map))
-      })
-
-    val y = spark.createDataFrame(x)
+    val dataFrame = spark.createDataFrame(splitFeaturesAndLabel(originalDataFrame))
       .toDF("label", "features")
 
     // Building the model
     val lr = new LinearRegression()
+    val lrModel = lr.fit(dataFrame)
 
-    val lrModel = lr.fit(y)
-
-    println(s"Coefficients: ${lrModel.coefficients} Intercept: ${lrModel.intercept}")
+    println(s"Coefficients: ${lrModel.coefficients}")
+    println(s"Intercept: ${lrModel.intercept}")
     val trainingSummary = lrModel.summary
     println(s"numIterations: ${trainingSummary.totalIterations}")
     println(s"objectiveHistory: ${trainingSummary.objectiveHistory.toList}")
@@ -48,6 +38,17 @@ object App {
     println(s"r2: ${trainingSummary.r2}")
 
     sc.stop()
+  }
+
+  def splitFeaturesAndLabel(dataFrame: DataFrame): Array[(Double, Vector)] = {
+    dataFrame
+      .collect()
+      .drop(1)
+      .map(line => {
+        val map = line.toSeq.drop(5).dropRight(1).map(_.toString).map(toDouble).toArray
+        val label = line.toSeq.last
+        (label.toString.toDouble, Vectors.dense(map))
+      })
   }
 
   def toDouble(input: String): Double = input match {
