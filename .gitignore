@@ -7,7 +7,6 @@ target/
 lib_managed/
 src_managed/
 project/boot/
-.history
 .cache
 ### Scala template
 *.class
@@ -27,3 +26,4 @@ project/plugins/project/
 .ensime
 
 .idea/
+spark/
